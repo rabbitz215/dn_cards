@@ -17,13 +17,27 @@ export default function Admin() {
 
   async function fetchFromSupa(){
     if(!supabase) return;
-    const { data: cs } = await supabase.from("monster_cards").select("card_no,name,nests(name)").order("card_no");
-    const { data: sts } = await supabase.from("card_stats").select("*").order("card_no");
-    if(!cs || !sts) return;
-    const map: Record<number, any> = {};
-    cs.forEach((c:any)=>{ map[c.card_no]={card_no:c.card_no,name:c.name,nest:c.nests?.name||"Unknown",stats:{}}; });
-    sts.forEach((s:any)=>{ if(!map[s.card_no]) return; if(!map[s.card_no].stats[s.stat_name]) map[s.card_no].stats[s.stat_name]=[0,0,0,0,0]; map[s.card_no].stats[s.stat_name][s.rarity-1]=s.value; });
-    const conv: MonsterCard[] = Object.values(map).map((c:any)=>({card_no:c.card_no,name:c.name,nest:c.nest,stats:Object.entries(c.stats).map(([stat,values])=>({stat,values:values as number[]}))}));
+    const { data: cs } = await supabase
+      .from("monster_cards")
+      .select("card_no, name, nests(name), card_stats(stat_name, rarity, value)")
+      .order("card_no");
+    if(!cs) return;
+    const conv: MonsterCard[] = cs.map((c: any) => {
+      const statsMap: Record<string, number[]> = {};
+      c.card_stats?.forEach((s: any) => {
+        if (!statsMap[s.stat_name]) statsMap[s.stat_name] = [0, 0, 0, 0, 0];
+        statsMap[s.stat_name][s.rarity - 1] = s.value;
+      });
+      return {
+        card_no: c.card_no,
+        name: c.name,
+        nest: c.nests?.name || "Unknown",
+        stats: Object.entries(statsMap).map(([stat, values]) => ({
+          stat,
+          values,
+        })),
+      };
+    });
     setCards(conv);
   }
 
