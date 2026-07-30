@@ -96,6 +96,23 @@ export default function Home() {
     return f;
   }, [cards, q, nestFilter, statFilter, sort, rarity]);
 
+  const totalStats = useMemo(() => {
+    const totals: Record<string, number[]> = {};
+    filtered.forEach(c => {
+      c.stats.forEach(s => {
+        if (s.stat === "Crystal of Power") return;
+        if (statFilter.size && !statFilter.has(s.stat)) return;
+        if (!totals[s.stat]) totals[s.stat] = [0, 0, 0, 0, 0];
+        s.values.forEach((v, i) => {
+          if (rarity.has(i + 1)) {
+            totals[s.stat][i] += v;
+          }
+        });
+      });
+    });
+    return Object.entries(totals).sort((a, b) => b[1].reduce((sum, v) => sum + v, 0) - a[1].reduce((sum, v) => sum + v, 0));
+  }, [filtered, statFilter, rarity]);
+
   if (!isSupabaseConfigured()) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#0b0e14]">
@@ -177,6 +194,34 @@ export default function Home() {
             <div className="flex items-center gap-2 mb-3 text-[11px] flex-wrap">
               {RARITY.map(r=><span key={r.id} className="px-2.5 py-1 rounded-full bg-[#151a23] border border-[#232a38]">{r.short} {r.name}={r.id}</span>)}
             </div>
+
+            {totalStats.length > 0 && (
+              <div className="bg-[#151a23] border border-[#232a38] rounded-2xl p-4 mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-extrabold tracking-widest text-[#f5c15e] uppercase">Total Stats Sum (Active Filters)</h3>
+                  <span className="text-[10px] text-zinc-500 font-mono">Sums from {filtered.length} visible cards</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {totalStats.map(([stat, values]) => (
+                    <div key={stat} className="bg-[#0b0e14]/50 border border-[#232a38]/80 rounded-xl p-2.5 flex flex-col justify-between gap-1">
+                      <span className="text-[11.5px] font-bold text-zinc-300 truncate">{stat}</span>
+                      <div className="flex gap-1 mt-0.5">
+                        {values.map((v, i) => {
+                          const r = RARITY[i];
+                          if (!rarity.has(r.id)) return null;
+                          return (
+                            <span key={i} className={`flex-1 text-center px-1 py-0.5 rounded text-[10px] font-mono font-bold ${r.bg} ${r.text} border ${r.border}`} title={r.name}>
+                              {v}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {filtered.length === 0 ? (
               <div className="bg-[#151a23] border border-[#232a38] rounded-2xl p-10 text-center text-zinc-500 text-sm">No cards found matching filters.</div>
             ) : (
