@@ -101,7 +101,6 @@ export default function Home() {
     filtered.forEach(c => {
       c.stats.forEach(s => {
         if (s.stat === "Crystal of Power") return;
-        if (statFilter.size && !statFilter.has(s.stat)) return;
         if (!totals[s.stat]) totals[s.stat] = [0, 0, 0, 0, 0];
         s.values.forEach((v, i) => {
           if (rarity.has(i + 1)) {
@@ -111,7 +110,7 @@ export default function Home() {
       });
     });
     return Object.entries(totals).sort((a, b) => b[1].reduce((sum, v) => sum + v, 0) - a[1].reduce((sum, v) => sum + v, 0));
-  }, [filtered, statFilter, rarity]);
+  }, [filtered, rarity]);
 
   if (!isSupabaseConfigured()) {
     return (
