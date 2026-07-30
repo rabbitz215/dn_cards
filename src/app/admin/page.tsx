@@ -90,7 +90,7 @@ export default function Admin() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-[#0b0e14]">
         <div className="w-full max-w-sm bg-[#151a23] border border-[#232a38] rounded-2xl p-6">
           <h1 className="font-bold text-lg">Admin Login</h1>
-          <p className="text-xs text-zinc-400 mt-1">Enter admin password. Set NEXT_PUBLIC_ADMIN_PASSWORD in .env or use default "admin123"</p>
+          <p className="text-xs text-zinc-400 mt-1">Enter admin password.</p>
           <input type="password" value={pwd} onChange={e=>setPwd(e.target.value)} placeholder="Password" className="w-full mt-4 bg-[#0b0e14] border border-[#232a38] rounded-xl px-4 py-2.5 text-sm"/>
           <button onClick={()=>{ const expected = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123"; if(pwd===expected) setAuthed(true); else alert("wrong"); }} className="w-full mt-3 bg-[#f5c15e] text-black font-bold py-2.5 rounded-xl text-sm">Enter</button>
           <a href="/" className="block text-center text-xs text-zinc-500 mt-3">← Back to DB</a>
